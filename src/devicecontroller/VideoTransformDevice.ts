@@ -24,6 +24,11 @@ export default interface VideoTransformDevice {
   applyProcessors(mediaStream?: MediaStream): Promise<MediaStream>;
 
   /**
+   * `onOutputStreamDisconnect` is called when device controller disconnects the transformed video stream.
+   */
+  onOutputStreamDisconnect(): void;
+
+  /**
    * `outputMediaStream` is generated after processors are applied. It will be auto-released after `stop` is called.
    */
   readonly outputMediaStream: MediaStream;
