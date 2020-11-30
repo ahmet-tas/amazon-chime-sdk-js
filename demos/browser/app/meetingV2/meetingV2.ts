@@ -15,7 +15,7 @@ import {
   ConsoleLogger,
   ContentShareObserver,
   DataMessage,
-  DefaultActiveSpeakerPolicy,
+  //DefaultActiveSpeakerPolicy,
   DefaultAudioMixController,
   DefaultDeviceController,
   DefaultMeetingSession,
@@ -50,7 +50,7 @@ import WebRTCStatsCollector from './webrtcstatscollector/WebRTCStatsCollector';
 
 class DemoTileOrganizer {
   // this is index instead of length
-  static MAX_TILES = 17;
+  static MAX_TILES = 1;
   public tiles: { [id: number]: number } = {};
   public tileStates: {[id: number]: boolean } = {};
   public remoteTileCount = 0;
@@ -175,7 +175,7 @@ export class DemoMeetingApp implements
   AudioVideoObserver,
   DeviceChangeObserver,
   ContentShareObserver {
-  static readonly DID: string = '+17035550122';
+  static readonly DID: string = '';
   static readonly BASE_URL: string = [location.protocol, '//', location.host, location.pathname.replace(/\/*$/, '/').replace('/v2', '')].join('');
   static testVideo: string = 'https://upload.wikimedia.org/wikipedia/commons/transcoded/c/c0/Big_Buck_Bunny_4K.webm/Big_Buck_Bunny_4K.webm.360p.vp9.webm';
   static readonly LOGGER_BATCH_SIZE: number = 85;
@@ -196,6 +196,7 @@ export class DemoMeetingApp implements
   tileOrganizer: DemoTileOrganizer = new DemoTileOrganizer();
   canStartLocalVideo: boolean = true;
   defaultBrowserBehaviour: DefaultBrowserBehavior = new DefaultBrowserBehavior();
+  attendeeType: string | null = null;
 
   // eslint-disable-next-line
   roster: any = {};
@@ -214,6 +215,7 @@ export class DemoMeetingApp implements
     'button-content-share': false,
     'button-pause-content-share': false,
     'button-video-stats': false,
+    'button-chat-window': false
   };
 
   contentShareType: ContentShareType = ContentShareType.ScreenCapture;
@@ -252,18 +254,60 @@ export class DemoMeetingApp implements
     this.initParameters();
     this.setMediaRegion();
     this.setUpVideoTileElementResizer();
-    if (this.isRecorder() || this.isBroadcaster()) {
-      new AsyncScheduler().start(async () => {
-        this.meeting = new URL(window.location.href).searchParams.get('m');
-        this.name = this.isRecorder() ? '«Meeting Recorder»' : '«Meeting Broadcaster»';
-        await this.authenticate();
-        await this.join();
-        this.displayButtonStates();
-        this.switchToFlow('flow-meeting');
-      });
+
+    if (this.isFromPlus2()) {
+        new AsyncScheduler().start(async () => {
+          this.meeting = new URL(window.location.href).searchParams.get('m');
+          this.name = new URL(window.location.href).searchParams.get('n');
+          this.region = await this.getNearestMediaRegion();
+
+          await this.authenticate();
+          await this.join();
+          this.displayButtonStates();
+          this.switchToFlow('flow-meeting');
+          
+          //audio & video only if moderator in waiting lounge or 1:1 chat
+          //if its the moderator or 1:1 chat -> start video
+          if(this.attendeeType === 'moderator') {
+            this.toggleControlsForModerator();
+          } else if(this.attendeeType === 'attendee') {
+            this.toggleControlsForAttendee();
+          } else if (this.attendeeType === 'chat') {
+            this.toggleControlsForChat();
+          }
+        });
     } else {
       this.switchToFlow('flow-authenticate');
     }
+  }
+
+  toggleControlsForModerator(): void {
+    //activate camera for moderator by default
+    //document.getElementById('button-camera').click();
+  }
+
+  toggleControlsForAttendee(): void {
+    //deactivate microphone
+    //document.getElementById('button-microphone').dispatchEvent(new Event('mousedown'));
+
+    //hide unnecessary controls
+    document.getElementById('camera-buttons').className = 'd-none';
+    document.getElementById('contentShare-buttons').className = 'd-none';
+    document.getElementById('button-pause-content-share').className = 'd-none';
+    document.getElementById('button-video-stats').className = 'd-none';
+  }
+
+  toggleControlsForChat(): void {
+    //active video (mic is already activated by default)
+    //document.getElementById('button-camera').click();
+
+    //hide unnecessary controls
+    document.getElementById('roster-message-container').className = 'd-none';
+    document.getElementById('attendeeList').className = 'd-none';
+    document.getElementById('button-chat-window').className = 'd-none';
+    document.getElementById('contentShare-buttons').className = 'd-none';
+    document.getElementById('button-pause-content-share').className = 'd-none';
+    document.getElementById('button-video-stats').className = 'd-none';
   }
 
   initParameters(): void {
@@ -279,7 +323,7 @@ export class DemoMeetingApp implements
   async initVoiceFocus(): Promise<void> {
     const logger = new ConsoleLogger('SDK', LogLevel.DEBUG);
     if (!this.enableWebAudio) {
-      logger.info('[DEMO] Web Audio not enabled. Not checking for Amazon Voice Focus support.');
+      logger.info('[Plus2 Chime SDK] Web Audio not enabled. Not checking for Amazon Voice Focus support.');
       return;
     }
 
@@ -289,7 +333,7 @@ export class DemoMeetingApp implements
         this.voiceFocusTransformer = await this.getVoiceFocusDeviceTransformer();
         this.supportsVoiceFocus = this.voiceFocusTransformer && this.voiceFocusTransformer.isSupported();
         if (this.supportsVoiceFocus) {
-          logger.info('[DEMO] Amazon Voice Focus is supported.');
+          logger.info('[Plus2 Chime SDK] Amazon Voice Focus is supported.');
           document.getElementById('voice-focus-setting').classList.remove('hidden');
           await this.populateAllDeviceLists();
           return;
@@ -297,16 +341,16 @@ export class DemoMeetingApp implements
       }
     } catch (e) {
       // Fall through.
-      logger.warn(`[DEMO] Does not support Amazon Voice Focus: ${e.message}`);
+      logger.warn(`[Plus2 Chime SDK] Does not support Amazon Voice Focus: ${e.message}`);
     }
-    logger.warn('[DEMO] Does not support Amazon Voice Focus.');
+    logger.warn('[Plus2 Chime SDK] Does not support Amazon Voice Focus.');
     this.supportsVoiceFocus = false;
     document.getElementById('voice-focus-setting').classList.toggle('hidden', true);
     await this.populateAllDeviceLists();
   }
 
   private async onVoiceFocusSettingChanged(): Promise<void> {
-    this.log('[DEMO] Amazon Voice Focus setting toggled to', this.enableVoiceFocus);
+    this.log('[Plus2 Chime SDK] Amazon Voice Focus setting toggled to', this.enableVoiceFocus);
     this.openAudioInputFromSelectionAndPreview();
   }
 
@@ -600,6 +644,25 @@ export class DemoMeetingApp implements
       this.toggleButton('button-video-stats');
     });
 
+    const buttonChatWindow = document.getElementById('button-chat-window');
+    buttonChatWindow.addEventListener('click', () => {
+        this.toggleButton('button-chat-window');
+        let chatWindow: HTMLElement = document.getElementById('roster-message-container');
+
+        var classes = chatWindow.className.split(" ");
+	
+        let indexOfDnone = classes.indexOf('d-none');
+        let indexOfDflex = classes.indexOf('d-flex');
+        
+        if (indexOfDnone >= 0) {
+          classes.splice(indexOfDnone, 1, 'd-flex');
+        } else if (indexOfDflex >= 0){
+          classes.splice(indexOfDflex, 1, 'd-none');
+        }
+        
+        chatWindow.className = classes.join(' ');
+    });
+
     const sendMessage = () => {
       new AsyncScheduler().start(() => {
         const textArea = document.getElementById('send-message') as HTMLTextAreaElement;
@@ -883,7 +946,7 @@ export class DemoMeetingApp implements
         body
       });
       if (response.status === 200) {
-        console.log('[DEMO] log stream created');
+        console.log('[Plus2 Chime SDK] log stream created');
       }
     } catch (error) {
       this.log(error.message);
@@ -1104,7 +1167,7 @@ export class DemoMeetingApp implements
       );
     };
     this.audioVideo.realtimeSubscribeToAttendeeIdPresence(handler);
-    const activeSpeakerHandler = (attendeeIds: string[]): void => {
+/*     const activeSpeakerHandler = (attendeeIds: string[]): void => {
       for (const attendeeId in this.roster) {
         this.roster[attendeeId].active = false;
       }
@@ -1128,7 +1191,7 @@ export class DemoMeetingApp implements
         this.updateRoster();
       },
       this.showActiveSpeakerScores ? 100 : 0,
-    );
+    ); */
   }
 
 
@@ -1770,12 +1833,12 @@ export class DemoMeetingApp implements
       this.contentShareTypeChanged(ContentShareType.ScreenCapture);
     });
 
-    item = document.getElementById('dropdown-item-content-share-screen-test-video');
+/*     item = document.getElementById('dropdown-item-content-share-screen-test-video');
     item.addEventListener('click', () => {
       this.contentShareTypeChanged(ContentShareType.VideoFile, DemoMeetingApp.testVideo);
-    });
+    }); */
 
-    document.getElementById('content-share-item').addEventListener('change', () => {
+/*     document.getElementById('content-share-item').addEventListener('change', () => {
       const fileList = document.getElementById('content-share-item') as HTMLInputElement;
       const file = fileList.files[0];
       if (!file) {
@@ -1786,7 +1849,7 @@ export class DemoMeetingApp implements
       this.log(`content share selected: ${url}`);
       this.contentShareTypeChanged(ContentShareType.VideoFile, url);
       fileList.value = '';
-    });
+    }); */
   }
 
   private async contentShareTypeChanged(contentShareType: ContentShareType, videoUrl?: string): Promise<void> {
@@ -1835,6 +1898,17 @@ export class DemoMeetingApp implements
     }
   }
 
+  isFromPlus2(): boolean {
+    let type: string = new URL(window.location.href).searchParams.get('t');
+    
+    if(type && type.length > 0) {
+        this.attendeeType = type;
+        return true;
+    }
+    
+    return false;
+  }
+
   isRecorder(): boolean {
     return (new URL(window.location.href).searchParams.get('record')) === 'true';
   }
@@ -1854,7 +1928,7 @@ export class DemoMeetingApp implements
   }
 
   log(str: string, ...args: any[]): void {
-    console.log.apply(console, [`[DEMO] ${str}`, ...args]);
+    console.log.apply(console, [`[Plus2 Chime SDK] ${str}`, ...args]);
   }
 
   audioVideoDidStartConnecting(reconnecting: boolean): void {
@@ -1887,7 +1961,7 @@ export class DemoMeetingApp implements
       return;
     }
     const tileIndex = tileState.localTile
-      ? 16
+      ? 1
       : this.tileOrganizer.acquireTileIndex(tileState.tileId);
     const tileElement = document.getElementById(`tile-${tileIndex}`) as HTMLDivElement;
     const videoElement = document.getElementById(`video-${tileIndex}`) as HTMLVideoElement;
@@ -1939,6 +2013,8 @@ export class DemoMeetingApp implements
   hideTile(tileIndex: number): void {
     const tileElement = document.getElementById(`tile-${tileIndex}`) as HTMLDivElement;
     tileElement.classList.remove('active', 'featured', 'content');
+    
+    this.localTileAsSquare();
   }
 
   tileIdForAttendeeId(attendeeId: string): number | null {
@@ -1974,6 +2050,21 @@ export class DemoMeetingApp implements
     return null;
   }
 
+  localTileAsSquare(): void {
+    const localTileIndex = (this.localTileId() -1);
+    const localTileElement = document.getElementById(`tile-${localTileIndex}`) as HTMLDivElement;
+    
+    if (!localTileElement){
+        return;
+    }
+
+    if(this.tileOrganizer.remoteTileCount > 0){
+        localTileElement.classList.add('localTile');
+    } else {
+        localTileElement.classList.remove('localTile');   
+    }
+  }
+
   layoutFeaturedTile(): void {
     if (!this.meetingSession) {
       return;
@@ -1994,6 +2085,7 @@ export class DemoMeetingApp implements
       }
     }
 
+    this.localTileAsSquare();
     this.updateGridClasses();
   }
 

@@ -546,7 +546,7 @@ a.markdown:active {
 }
 
 .v-grid.size-2 {
-  grid-template: repeat(2, 1fr) / repeat(2, 1fr);
+  grid-template: repeat(1, 1fr) / repeat(1, 1fr);
 }
 
 .v-grid.size-3,
@@ -649,7 +649,7 @@ a.markdown:active {
 
 @media screen and (max-width: 1200px) {
   .v-grid.size-2 {
-    grid-template: repeat(2, 1fr) / 1fr;
+    grid-template: repeat(1, 1fr) / 1fr;
   }
 
   .v-grid.size-3 {
@@ -840,4 +840,22 @@ a.markdown:active {
 
 .vf-active::before {
   content: "✓ "
+}
+
+#control-bar{
+  background-image: linear-gradient(rgba(255,255,255,0),rgba(0,0,0,0.7));
+  padding-top: 25px;
+  padding-bottom: 15px;
+}
+
+.localTile {
+  position: absolute;
+  width: 14%;
+  height: 25%;
+  right: 15px;
+  z-index:1;
+}
+
+.video-tile-attendeeid, .video-tile-pause, .meetingControls {
+  display:none !important;
 }

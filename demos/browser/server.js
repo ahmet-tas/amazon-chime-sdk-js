@@ -7,12 +7,14 @@ const fs = require('fs');
 const http = require('http');
 const url = require('url');
 const { v4: uuidv4 } = require('uuid');
+/* const { promisify } = require('util')
+const sleep = promisify(setTimeout) */
 
 // Store created meetings in a map so attendees can join by meeting title
 const meetingTable = {};
 
 // Use local host for application server
-const host = '127.0.0.1:8080';
+const host = 'localhost:8083';
 
 // Load the contents of the web application to be used as the index page
 const indexPage = fs.readFileSync(`dist/${process.env.npm_config_app || 'meetingV2'}.html`);
@@ -42,7 +44,13 @@ http.createServer({}, async (request, response) => {
       if (!requestUrl.query.title || !requestUrl.query.name || !requestUrl.query.region) {
         throw new Error('Need parameters: title, name, region');
       }
-
+/* 
+      //sleep 5 seconds, if the meeting not created already
+      if(!meetingTable[requestUrl.query.title]){
+        log("Meeting not found. Sleeping 5 seconds")
+        await sleep(5000);
+      }
+ */
       // Look up the meeting by its title. If it does not exist, create the meeting.
       if (!meetingTable[requestUrl.query.title]) {
         meetingTable[requestUrl.query.title] = await chime.createMeeting({
