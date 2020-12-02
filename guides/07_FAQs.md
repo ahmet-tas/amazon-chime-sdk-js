@@ -57,7 +57,13 @@ Note that due to limitations in transpilers, requirements of the web platform mi
 
 [Firefox](https://bugzilla.mozilla.org/show_bug.cgi?id=1152401) and [Safari](https://bugs.webkit.org/show_bug.cgi?id=179415) have known issues disallowing them from listing audio output devices on these browsers. While clients can continue the meeting using the default device, they will not be able to select devices in meetings.
 
-[Android Chrome](https://bugs.chromium.org/p/chromium/issues/detail?id=635686&sort=-stars&q=android%20chrome%20bluetooth%20headphone&can=2) has a known issue switching between bluetooth audio output devices. While clients can continue the meeting using the default device, there is a [bug](https://bugs.chromium.org/p/chromium/issues/detail?id=635686&sort=-stars&q=android%20chrome%20bluetooth%20headphone&can=2) related to switching to an bluetooth audio output.
+[Android Chrome](https://bugs.chromium.org/p/chromium/issues/detail?id=635686&sort=-stars&q=android%20chrome%20bluetooth%20headphone&can=2) has a known issue switching between Bluetooth audio output devices. While clients can continue the meeting using the default device, there is a [bug](https://bugs.chromium.org/p/chromium/issues/detail?id=635686&sort=-stars&q=android%20chrome%20bluetooth%20headphone&can=2) related to switching to a Bluetooth audio output.
+
+### I am getting `Cannot select audio output device. This browser does not support setSinkId` error on the browser console. Is this a known issue?
+
+In the background, `bindAudioElement()`, `bindAudioStream()`, and `bindAudioDevice()` call the browser API [`setSinkId()`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/setSinkId). The full list of browsers that support `setSinkId` API can be found [here](https://caniuse.com/?search=setsinkid). In Firefox, this feature is behind the `media.setsinkid.enabled` preference (needs to be set to `true`). To change preferences in Firefox, visit `about:config`.
+
+Use `BrowserBehavior.supportsSetSinkId()` to determine whether the browser supports `setSinkId()` before calling these methods.
 
 ### My video disappears in Safari browsers, is this a known issue?
 
@@ -105,6 +111,10 @@ AWS accounts have a soft limit of [250 concurrent meetings](https://docs.aws.ama
 Amazon Chime SDK limits are defined [here](https://docs.aws.amazon.com/chime/latest/dg/meetings-sdk.html#mtg-limits). The service supports up to 250 attendees and up to 16 video participants in a meeting (video limit is enforced separately). An attendee is considered active unless it has been explicitly removed using DeleteAttendee API call. Attendee limits cannot be changed.
 
 If your use case requires more than 250 attendees, consider using a [broadcasting solution](https://github.com/aws-samples/amazon-chime-meeting-broadcast-demo).
+
+### What happens to the subsequent participants who try to turn on the local video while 16 participants have already turned on the local video?
+
+Once the limit of 16 is reached in a meeting, for all the subsequent participants who try to turn on the local video, the SDK sets the Meeting Session status code to [VideoCallSwitchToViewOnly = 10](https://github.com/aws/amazon-chime-sdk-js/blob/bfc4c600fb7e68f2d358ecb6c7fd096d30b2d430/src/meetingsession/MeetingSessionStatusCode.ts#L73) which in turn triggers the observer '[videoSendDidBecomeUnavailable](https://aws.github.io/amazon-chime-sdk-js/interfaces/audiovideoobserver.html#videosenddidbecomeunavailable)'.
 
 ### Can I schedule Amazon Chime SDK meetings ahead of time?
 
