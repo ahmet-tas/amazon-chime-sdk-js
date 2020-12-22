@@ -143,8 +143,11 @@ exports.end = async (event, context) => {
   // Fetch the meeting by title
   const meeting = await getMeeting(event.queryStringParameters.title);
 
-  // End the meeting. All attendee connections will hang up.
-  await chime.deleteMeeting({ MeetingId: meeting.Meeting.MeetingId }).promise();
+  if(meeting) {
+    // End the meeting. All attendee connections will hang up.
+    await chime.deleteMeeting({ MeetingId: meeting.Meeting.MeetingId }).promise();
+  }
+
   return response(200, 'application/json', JSON.stringify({}));
 };
 

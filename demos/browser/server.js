@@ -63,19 +63,25 @@ http.createServer({}, async (request, response) => {
 
       // Fetch the meeting info
       const meeting = meetingTable[requestUrl.query.title];
-      
+
       // Return the meeting response.
       respond(response, 201, 'application/json', JSON.stringify({
         JoinInfo: {
           Meeting: meeting.Meeting
         },
       }, null, 2));
-    } 
+    }
     else if (request.method === 'POST' && requestUrl.pathname === '/join') {
       if (!requestUrl.query.title || !requestUrl.query.name || !requestUrl.query.region) {
         throw new Error('Need parameters: title, name, region');
       }
-
+      /* 
+            //sleep 5 seconds, if the meeting not created already
+            if(!meetingTable[requestUrl.query.title]){
+              log("Meeting not found. Sleeping 5 seconds")
+              await sleep(5000);
+            }
+       */
       // Look up the meeting by its title. If it does not exist, create the meeting.
       if (!meetingTable[requestUrl.query.title]) {
         meetingTable[requestUrl.query.title] = await chime.createMeeting({
@@ -116,9 +122,13 @@ http.createServer({}, async (request, response) => {
       }, null, 2));
     } else if (request.method === 'POST' && requestUrl.pathname === '/end') {
       // End the meeting. All attendee connections will hang up.
-      await chime.deleteMeeting({
-        MeetingId: meetingTable[requestUrl.query.title].Meeting.MeetingId,
-      }).promise();
+      if (meetingTable[requestUrl.query.title] && meetingTable[requestUrl.query.title].Meeting) {
+        await chime.deleteMeeting({
+          MeetingId: meetingTable[requestUrl.query.title].Meeting.MeetingId,
+        }).promise();
+
+        delete meetingTable[requestUrl.query.title];
+      }
       respond(response, 200, 'application/json', JSON.stringify({}));
     } else if (request.method === 'GET' && requestUrl.pathname === '/fetch_credentials') {
       const awsCredentials = {
