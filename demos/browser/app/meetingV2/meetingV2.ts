@@ -283,12 +283,12 @@ export class DemoMeetingApp implements
 
   toggleControlsForModerator(): void {
     //activate camera for moderator by default
-    //document.getElementById('button-camera').click();
+    document.getElementById('button-camera').click();
   }
 
   toggleControlsForAttendee(): void {
     //deactivate microphone
-    //document.getElementById('button-microphone').dispatchEvent(new Event('mousedown'));
+    document.getElementById('button-microphone').dispatchEvent(new Event('mousedown'));
 
     //hide unnecessary controls
     document.getElementById('camera-buttons').className = 'd-none';
@@ -299,7 +299,7 @@ export class DemoMeetingApp implements
 
   toggleControlsForChat(): void {
     //active video (mic is already activated by default)
-    //document.getElementById('button-camera').click();
+    document.getElementById('button-camera').dispatchEvent(new Event('click'));
 
     //hide unnecessary controls
     document.getElementById('roster-message-container').className = 'd-none';
@@ -2008,6 +2008,8 @@ export class DemoMeetingApp implements
     if (tileState.isContent) {
       tileElement.classList.add('content');
     }
+
+    //document.getElementById('attendeeList').className = 'd-none';
   }
 
   hideTile(tileIndex: number): void {
@@ -2015,6 +2017,7 @@ export class DemoMeetingApp implements
     tileElement.classList.remove('active', 'featured', 'content');
     
     this.localTileAsSquare();
+    //document.getElementById('attendeeList').className = 'd-flex';
   }
 
   tileIdForAttendeeId(attendeeId: string): number | null {
@@ -2051,8 +2054,7 @@ export class DemoMeetingApp implements
   }
 
   localTileAsSquare(): void {
-    const localTileIndex = (this.localTileId() -1);
-    const localTileElement = document.getElementById(`tile-${localTileIndex}`) as HTMLDivElement;
+    const localTileElement = document.getElementById(`tile-${this.localTileId()}`) as HTMLDivElement;
     
     if (!localTileElement){
         return;

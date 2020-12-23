@@ -542,6 +542,7 @@ a.markdown:active {
   .video-tile {
     height: 0;
     padding-bottom: calc(100% / (16 / 9));
+    //display: contents;
   }
 }
 
@@ -850,8 +851,8 @@ a.markdown:active {
 
 .localTile {
   position: absolute;
-  width: 14%;
-  height: 25%;
+  width: 200px;
+  height: 200px;
   right: 15px;
   z-index:1;
 }
