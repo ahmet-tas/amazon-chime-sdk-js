@@ -35,6 +35,35 @@ http.createServer({}, async (request, response) => {
     if (request.method === 'GET' && requestUrl.pathname === '/') {
       // Return the contents of the index page
       respond(response, 200, 'text/html', indexPage);
+    } else if (request.method === 'GET' && requestUrl.pathname === '/create') {
+      if (!requestUrl.query.title || !requestUrl.query.region) {
+        throw new Error('Invalid Request');
+      }
+
+      // Look up the meeting by its title. If it does not exist, create the meeting.
+      if (!meetingTable[requestUrl.query.title]) {
+        meetingTable[requestUrl.query.title] = await chime.createMeeting({
+          // Use a UUID for the client request token to ensure that any request retries
+          // do not create multiple meetings.
+          ClientRequestToken: uuidv4(),
+          // Specify the media region (where the meeting is hosted).
+          // In this case, we use the region selected by the user.
+          MediaRegion: requestUrl.query.region,
+          // Any meeting ID you wish to associate with the meeting.
+          // For simplicity here, we use the meeting title.
+          ExternalMeetingId: requestUrl.query.title.substring(0, 64),
+        }).promise();
+      }
+
+      // Fetch the meeting info
+      const meeting = meetingTable[requestUrl.query.title];
+      
+      // Return the meeting response.
+      respond(response, 201, 'application/json', JSON.stringify({
+        JoinInfo: {
+          Meeting: meeting.Meeting
+        },
+      }, null, 2));
     } else if (process.env.DEBUG && request.method === 'POST' && requestUrl.pathname === '/join') {
       // For internal debugging - ignore this.
       respond(response, 201, 'application/json', JSON.stringify(require('./debug.js').debug(requestUrl.query), null, 2));
@@ -83,9 +112,13 @@ http.createServer({}, async (request, response) => {
       }, null, 2));
     } else if (request.method === 'POST' && requestUrl.pathname === '/end') {
       // End the meeting. All attendee connections will hang up.
-      await chime.deleteMeeting({
-        MeetingId: meetingTable[requestUrl.query.title].Meeting.MeetingId,
-      }).promise();
+      if (meetingTable[requestUrl.query.title] && meetingTable[requestUrl.query.title].Meeting) {
+        await chime.deleteMeeting({
+          MeetingId: meetingTable[requestUrl.query.title].Meeting.MeetingId,
+        }).promise();
+
+        delete meetingTable[requestUrl.query.title];
+      }
       respond(response, 200, 'application/json', JSON.stringify({}));
     } else if (request.method === 'GET' && requestUrl.pathname === '/fetch_credentials') {
       const awsCredentials = {

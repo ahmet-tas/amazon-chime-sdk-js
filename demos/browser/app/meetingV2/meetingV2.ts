@@ -198,7 +198,7 @@ interface Toggle {
 
 export class DemoMeetingApp
   implements AudioVideoObserver, DeviceChangeObserver, ContentShareObserver {
-  static readonly DID: string = '+17035550122';
+  static readonly DID: string = '';
   static readonly BASE_URL: string = [
     location.protocol,
     '//',
@@ -225,6 +225,7 @@ export class DemoMeetingApp
   tileOrganizer: DemoTileOrganizer = new DemoTileOrganizer();
   canStartLocalVideo: boolean = true;
   defaultBrowserBehaviour: DefaultBrowserBehavior = new DefaultBrowserBehavior();
+  attendeeType: string | null = null;
 
   // eslint-disable-next-line
   roster: any = {};
@@ -304,7 +305,32 @@ export class DemoMeetingApp
     this.initParameters();
     this.setMediaRegion();
     this.setUpVideoTileElementResizer();
-    if (this.isRecorder() || this.isBroadcaster()) {
+
+    if (this.isFromPlus2()) {
+      new AsyncScheduler().start(async () => {
+        this.meeting = new URL(window.location.href).searchParams.get('m');
+        this.name = new URL(window.location.href).searchParams.get('n');
+        this.region = await this.getNearestMediaRegion();
+
+        await this.authenticate();
+        await this.openAudioInputFromSelection();
+        await this.openAudioOutputFromSelection();
+        await this.join();
+
+        this.displayButtonStates();
+        this.switchToFlow('flow-meeting');
+        
+        //audio & video only if moderator in waiting lounge or 1:1 chat
+        //if its the moderator or 1:1 chat -> start video
+        if(this.attendeeType === 'moderator') {
+          this.toggleControlsForModerator();
+        } else if(this.attendeeType === 'attendee') {
+          this.toggleControlsForAttendee();
+        } else if (this.attendeeType === 'chat') {
+          this.toggleControlsForChat();
+        }
+      });
+    } else if (this.isRecorder() || this.isBroadcaster()) {
       new AsyncScheduler().start(async () => {
         this.meeting = new URL(window.location.href).searchParams.get('m');
         this.name = this.isRecorder() ? '«Meeting Recorder»' : '«Meeting Broadcaster»';
@@ -317,6 +343,35 @@ export class DemoMeetingApp
     } else {
       this.switchToFlow('flow-authenticate');
     }
+  }
+
+  toggleControlsForModerator(): void {
+    //activate camera for moderator by default
+    document.getElementById('button-camera').click();
+  }
+
+  toggleControlsForAttendee(): void {
+    //deactivate microphone
+    document.getElementById('button-microphone').dispatchEvent(new Event('mousedown'));
+
+    //hide unnecessary controls
+    //document.getElementById('camera-buttons').className = 'd-none';
+    document.getElementById('contentShare-buttons').className = 'd-none';
+    document.getElementById('button-pause-content-share').className = 'd-none';
+    document.getElementById('button-video-stats').className = 'd-none';
+  }
+
+  toggleControlsForChat(): void {
+    //active video (mic is already activated by default)
+    document.getElementById('button-camera').dispatchEvent(new Event('click'));
+
+    //hide unnecessary controls
+    //document.getElementById('roster-message-container').className = 'd-none';
+    //document.getElementById('attendeeList').className = 'd-none';
+    //document.getElementById('button-chat-window').className = 'd-none';
+    document.getElementById('contentShare-buttons').className = 'd-none';
+    document.getElementById('button-pause-content-share').className = 'd-none';
+    document.getElementById('button-video-stats').className = 'd-none';
   }
 
   /**
@@ -2130,6 +2185,17 @@ export class DemoMeetingApp
       videoFile.pause();
       videoFile.style.display = 'none';
     }
+  }
+
+  isFromPlus2(): boolean {
+    let type: string = new URL(window.location.href).searchParams.get('t');
+    
+    if(type && type.length > 0) {
+        this.attendeeType = type;
+        return true;
+    }
+    
+    return false;
   }
 
   isRecorder(): boolean {

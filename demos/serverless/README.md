@@ -26,6 +26,7 @@ API Gateway deployment that runs the `meeting` demo.
 cd demos/serverless
 npm install
 npm run deploy -- -r us-east-1 -b <my-bucket> -s <my-stack-name> -a meeting
+npm run deploy -- -r us-east-2 -b plus2bucket-us-east-2 -s plus2stack-us-east-2 -a meeting
 ```
 
 #### Meeting Readiness Checker app
@@ -36,6 +37,7 @@ API Gateway deployment that runs the `meetingReadinessChecker` demo.
 cd demos/serverless
 npm install
 npm run deploy -- -r us-east-1 -b <my-bucket> -s <my-stack-name> -a meetingReadinessChecker
+npm run deploy -- -r us-east-2 -b plus2-readinesschecker-bucket-us-2 -s plus2-readinesschecker-stack-us-2 -a meetingReadinessChecker
 ```
 
 These script will create an S3 bucket and CloudFormation stack

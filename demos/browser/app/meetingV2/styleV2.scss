@@ -807,7 +807,7 @@ a.markdown:active {
 
 .video-tile-pause {
   position: absolute;
-  display: inline-block;
+  display: none;
   bottom: 10px;
   right: 10px;
   margin: 0;
@@ -851,9 +851,9 @@ a.markdown:active {
   padding: 1rem;
 }
 
-.video-tile.active:hover .video-tile-attendeeid {
+/* .video-tile.active:hover .video-tile-attendeeid {
   display: block;
-}
+} */
 
 .vf-active::before {
   content: "✓ "

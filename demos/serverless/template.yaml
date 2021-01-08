@@ -48,6 +48,7 @@ Resources:
               - 'chime:ListAttendees'
             Resource: '*'
       Roles:
+        - Ref: ChimeSdkCreateLambdaRole
         - Ref: ChimeSdkJoinLambdaRole
         - Ref: ChimeSdkEndLambdaRole
   ChimeMessagingAccessPolicy:
@@ -119,6 +120,23 @@ Resources:
           Type: Api
           Properties:
             Path: /
+            Method: GET
+  ChimeSdkCreateLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: handlers.create
+      CodeUri: src/
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref Meetings
+      Environment:
+        Variables:
+          USE_EVENT_BRIDGE: !Ref UseEventBridge
+      Events:
+        Api1:
+          Type: Api
+          Properties:
+            Path: /create
             Method: GET
   ChimeSdkJoinLambda:
     Type: AWS::Serverless::Function

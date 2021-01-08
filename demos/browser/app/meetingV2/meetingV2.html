@@ -25,7 +25,7 @@
       <h1 class="h3 mb-3 font-weight-normal">Join a meeting</h1>
       <div class="row mt-3">
         <label for="inputMeeting" class="sr-only">Meeting Title</label>
-        <input type="name" id="inputMeeting" class="form-control" placeholder="Meeting Title" required autofocus>
+        <input type="name" id="inputMeeting" class="form-control" placeholder="Meeting Title" required>
       </div>
       <div class="row mt-3">
         <label for="inputName" class="sr-only">Your Name</label>
@@ -105,7 +105,7 @@
       <h1 class="h3 mb-3 font-weight-normal">Join a meeting via SIP</h1>
       <div class="row mt-3">
         <label for="sip-inputMeeting" class="sr-only">Meeting Title</label>
-        <input type="name" id="sip-inputMeeting" class="form-control" placeholder="Meeting Title" required autofocus>
+        <input type="name" id="sip-inputMeeting" class="form-control" placeholder="Meeting Title" required>
       </div>
       <div class="row mt-3">
         <label for="voiceConnectorId" class="sr-only">Voice Connector ID</label>
@@ -243,8 +243,8 @@
 
 <!-- In-meeting screen -->
 
-<div id="flow-meeting" class="flow" style="position:absolute;left:0;top:0;bottom:55px;right:0">
-  <div class="p-2 d-none d-sm-block align-items-end" style="position:fixed;right:0;bottom:0;left:0;">
+<div id="flow-meeting" class="flow" style="position:absolute;left:0;top:0;bottom:5px;right:0">
+  <div class="p-2 d-none align-items-end" style="position:fixed;right:0;bottom:0;left:0;">
     <div class="row align-items-end">
       <div class="col">
         <div id="chime-meeting-id" class="text-muted"></div>
@@ -259,12 +259,12 @@
   <audio id="meeting-audio" style="display:none"></audio>
   <div id="meeting-container" class="container-fluid h-100" style="display:flex; flex-flow:column">
     <div class="row mb-3 mb-lg-0" style="flex: unset;">
-      <div class="col-12 col-lg-3 order-1 order-lg-1 text-center text-lg-left">
+      <div class="col-12 col-lg-3 order-1 order-lg-1 text-center text-lg-left d-none">
         <div id="meeting-id" class="navbar-brand text-muted m-0 m-lg-2"></div>
         <div id="mobile-chime-meeting-id" class="text-muted d-block d-sm-none" style="font-size:0.65rem;"></div>
         <div id="mobile-attendee-id" class="text-muted d-block d-sm-none mb-2" style="font-size:0.65rem;"></div>
       </div>
-      <div class="col-8 col-lg-6 order-2 order-lg-2 text-left text-lg-center">
+      <div class="col-12 col-lg-12 order-2 order-lg-2 text-left text-lg-center">
         <div class="btn-group mx-1 mx-xl-2 my-2" role="group" aria-label="Toggle microphone">
           <button id="button-microphone" type="button" class="btn btn-success" title="Toggle microphone">
             ${require('../../node_modules/open-iconic/svg/microphone.svg').default}
@@ -276,7 +276,7 @@
             </div>
           </div>
         </div>
-        <div class="btn-group mx-1 mx-xl-2 my-2" role="group" aria-label="Toggle camera">
+        <div id="camera-buttons" class="btn-group mx-1 mx-xl-2 my-2" role="group" aria-label="Toggle camera">
           <button id="button-camera" type="button" class="btn btn-success" title="Toggle camera">
             ${require('../../node_modules/open-iconic/svg/video.svg').default}
           </button>
@@ -287,7 +287,7 @@
             </div>
           </div>
         </div>
-        <div class="btn-group mx-1 mx-xl-2 my-2" role="group" aria-label="Apply filter">
+        <div class="btn-group mx-1 mx-xl-2 my-2 d-none" role="group" aria-label="Apply filter">
           <button id="button-video-filter" type="button" class="btn btn-success" title="Apply filter">
             ${require('../../node_modules/open-iconic/svg/contrast.svg').default}
           </button>
@@ -298,7 +298,7 @@
             </div>
           </div>
         </div>
-        <div class="btn-group mx-1 mx-xl-2 my-2" role="group" aria-label="Toggle content share">
+        <div id="contentShare-buttons" class="btn-group mx-1 mx-xl-2 my-2" role="group" aria-label="Toggle content share">
           <button id="button-content-share" type="button" class="btn btn-success" title="Toggle content share">
             ${require('../../node_modules/open-iconic/svg/camera-slr.svg').default}
           </button>
@@ -311,7 +311,7 @@
             </div>
           </div>
         </div>
-        <button id="button-pause-content-share" type="button" class="btn btn-success mx-1 mx-xl-2 my-2" title="Pause and unpause content share">
+        <button id="button-pause-content-share" type="button" class="btn btn-success mx-1 mx-xl-2 my-2 d-none" title="Pause and unpause content share">
           ${require('../../node_modules/open-iconic/svg/media-pause.svg').default}
         </button>
         <div class="btn-group mx-1 mx-xl-2 my-2" role="group" aria-label="Toggle speaker">
@@ -325,11 +325,11 @@
             </div>
           </div>
         </div>
-        <button id="button-video-stats" type="button" class="btn btn-success mx-1 mx-xl-2 my-2" title="Toggle video WebRTC stats display" data-toggle="button" aria-pressed="false" autocomplete="off">
+        <button id="button-video-stats" type="button" class="btn btn-success mx-1 mx-xl-2 my-2 d-none" title="Toggle video WebRTC stats display" data-toggle="button" aria-pressed="false" autocomplete="off">
           ${require('../../node_modules/open-iconic/svg/signal.svg').default}
         </button>
       </div>
-      <div class="col-4 col-lg-3 order-3 order-lg-3 text-right text-lg-right">
+      <div class="col-4 col-lg-3 order-3 order-lg-3 text-right text-lg-right d-none">
         <button id="button-meeting-leave" type="button" class="btn btn-outline-success mx-1 mx-xl-2 my-2 px-4" title="Leave meeting">
           ${require('../../node_modules/open-iconic/svg/account-logout.svg').default}
         </button>
