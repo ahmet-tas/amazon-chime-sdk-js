@@ -5,15 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- Add support for Amazon Voice Focus support in Safari Technology Preview for macOS.
+  Builders using an explicit revision or asset group must make sure to use a
+  revision no earlier than this; an error will be thrown in Safari if older
+  revisions are used.
+
+### Changed
+
+- Corrected `null` type on `DefaultVideoFrameProcessorPipeline` and `DefaultVideoTransformDevice`.
+- Amazon Voice Focus now makes better use of available CPU resources,
+  extending support to lower-end devices and improving quality on higher-end
+  devices.
+
+### Removed
+
+### Fixed
+
+- [Documentation] Corrected name for `voiceFocusInsufficientResources` in documentation.
+- Allow for `realtimeUnsubscribeFromVolumeIndicator` to unsubscribe from specific callbacks.
+
 ## [2.3.0] - 2020-12-21
 
 ### Added
+
 - Add Samsung Internet browser for Android as a supported browser.
 - [Documentation] Add documentation for video processing APIs.
 - Add `DefaultVideoTransformDevice` to implement `VideoTransformDevice`.
- `VideoFrameProcessor`, `VideoFrameProcessorPipeline` and `VideoFrameBuffer` interfaces
- are added to support `DefaultVideoTransformDevice` and allow processing steps to be applied to device.
- The method `chooseVideoInputDevice` in `DefaultDeviceController` can handle `VideoTransformDevice` now.
+  `VideoFrameProcessor`, `VideoFrameProcessorPipeline` and `VideoFrameBuffer` interfaces
+  are added to support `DefaultVideoTransformDevice` and allow processing steps to be applied to device.
+  The method `chooseVideoInputDevice` in `DefaultDeviceController` can handle `VideoTransformDevice` now.
 
 ### Changed
 
@@ -35,16 +58,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   trying to choose an output device in a browser that does not support
   `setSinkId`, and the demo will not log an error in these cases.
 - [Demo] The meeting readiness checker no longer re-initializes the device output list
-  after the user picked a device.
-- [Test] Fix voice focus integration/canary test.
+  after the user picks a device.
+- [Test] Fix Amazon Voice Focus integration/canary test.
 - [Demo] Additional best practices around choosing audio output devices.
 
 ## [2.2.0] - 2020-12-04
 
 ### Added
+
 - [Documentation] What happens when participants try to `startLocalVideoTile` when local video tile limit reached
 
 ### Changed
+
 - Log error if pass undefined device when calling choose input device
 - Doing typecheck for MediaDeviceInfo
 - Set automated integ test coverage on recent version of browsers

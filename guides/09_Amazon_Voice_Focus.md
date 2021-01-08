@@ -34,13 +34,15 @@ If you think your application might be used in these scenarios, take care to tes
 
 ### Browser compatibility
 
-Amazon Voice Focus in the Amazon Chime SDK for JavaScript works in Firefox, Chrome, and Chromium-based browsers (including Electron) on desktop and Android operating systems. A full compatibility table is below. Amazon Voice Focus does not currently support Safari on desktop or iOS devices, because Safari does not implement the required web standards.
+Amazon Voice Focus in the Amazon Chime SDK for JavaScript works in Firefox, Chrome, and Chromium-based browsers (including Electron) on desktop and Android operating systems. A full compatibility table is below.
+
+Amazon Voice Focus does not support the release version of Safari on desktop or iOS devices, because Safari does not implement the required web standards. Amazon Voice Focus supports Safari Technology Preview (v14.1, 117) as of version 2.4 of the Amazon Chime SDK.
 
 |Browser                                                                |Minimum supported version  |Preferred version  |Notes               |
 |---                                                                    |---                        |---                |---                 |
 |Firefox                                                                |76                         |83+                |                    |
 |Chromium-based browsers and environments, including Edge and Electron  |78                         |87+                |                    |
-|Safari                                                                 |Not supported              |-                  |                    |
+|Safari                                                                 |14.1*                      |-                  |Technology Preview  |
 |Android browser                                                        |78*                        |87*                |Typically too slow. |
 |iOS Safari                                                             |Not supported              |-                  |                    |
 
@@ -75,6 +77,7 @@ Modern web applications use [Content Security Policy](https://developer.mozilla.
 * `script-src` and `script-src-elem`: add `https://*.sdkassets.chime.aws` to load audio processing code to run in the browser’s audio renderer thread.
 * `connect-src`: add `https://*.sdkassets.chime.aws` to load model files via `fetch`.
 * `worker-src`: add `blob:` to load worker JavaScript across origins.
+* `child-src`: add `blob:` to load worker JavaScript across origins (only in Safari).
 
 If you omit any of these entries, or if you use both HTTP headers and `http-equiv` `meta` tags to specify policy and inadvertently exclude any of these by intersection, then Amazon Voice Focus will not be able to initialize, and will either appear to be unsupported or will fail to create a suppressed audio device. You will see errors in your browser console like:
 
@@ -281,7 +284,7 @@ We recommend that you allow estimation to adapt to the runtime environment: it i
 You can optionally implement the `VoiceFocusTransformDeviceObserver` interface and use `addObserver` to receive callbacks when one of two things occur:
 
 * `voiceFocusFellBackToInnerStream`: if applying noise suppression to an audio device failed, causing the SDK to fall back to using the inner device with the browser’s own noise suppression, this will be called. This should be uncommon, but this allows you to adapt your UI to failure.
-* `onCPUWarning`: if the noise suppressor is unable to keep up with input audio, and the execution mode is able to determine this, then `onCPUWarning` will be invoked approximately every 15 milliseconds. The user will not themselves hear any audio glitching: bad audio will be heard by *other participants in the meeting*. Disabling noise suppression or other application features might be necessary to avoid continued disruption of the user experience.
+* `voiceFocusInsufficientResources`: if the noise suppressor is unable to keep up with input audio, and the execution mode is able to determine this, then `voiceFocusInsufficientResources` will be invoked approximately every 15 milliseconds. The user will not themselves hear any audio glitching: bad audio will be heard by *other participants in the meeting*. Disabling noise suppression or other application features might be necessary to avoid continued disruption of the user experience.
 
 ## Automatic gain control
 

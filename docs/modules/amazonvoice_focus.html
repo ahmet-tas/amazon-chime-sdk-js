@@ -100,7 +100,8 @@
 					<a href="#browser-compatibility" id="browser-compatibility" style="color: inherit; text-decoration: none;">
 						<h3>Browser compatibility</h3>
 					</a>
-					<p>Amazon Voice Focus in the Amazon Chime SDK for JavaScript works in Firefox, Chrome, and Chromium-based browsers (including Electron) on desktop and Android operating systems. A full compatibility table is below. Amazon Voice Focus does not currently support Safari on desktop or iOS devices, because Safari does not implement the required web standards.</p>
+					<p>Amazon Voice Focus in the Amazon Chime SDK for JavaScript works in Firefox, Chrome, and Chromium-based browsers (including Electron) on desktop and Android operating systems. A full compatibility table is below.</p>
+					<p>Amazon Voice Focus does not support the release version of Safari on desktop or iOS devices, because Safari does not implement the required web standards. Amazon Voice Focus supports Safari Technology Preview (v14.1, 117) as of version 2.4 of the Amazon Chime SDK.</p>
 					<table>
 						<thead>
 							<tr>
@@ -124,9 +125,9 @@
 							</tr>
 							<tr>
 								<td>Safari</td>
-								<td>Not supported</td>
+								<td>14.1*</td>
 								<td>-</td>
-								<td></td>
+								<td>Technology Preview</td>
 							</tr>
 							<tr>
 								<td>Android browser</td>
@@ -167,6 +168,7 @@
 						<li><code>script-src</code> and <code>script-src-elem</code>: add <code>https://*.sdkassets.chime.aws</code> to load audio processing code to run in the browser’s audio renderer thread.</li>
 						<li><code>connect-src</code>: add <code>https://*.sdkassets.chime.aws</code> to load model files via <code>fetch</code>.</li>
 						<li><code>worker-src</code>: add <code>blob:</code> to load worker JavaScript across origins.</li>
+						<li><code>child-src</code>: add <code>blob:</code> to load worker JavaScript across origins (only in Safari).</li>
 					</ul>
 					<p>If you omit any of these entries, or if you use both HTTP headers and <code>http-equiv</code> <code>meta</code> tags to specify policy and inadvertently exclude any of these by intersection, then Amazon Voice Focus will not be able to initialize, and will either appear to be unsupported or will fail to create a suppressed audio device. You will see errors in your browser console like:</p>
 					<pre><code>Refused <span class="hljs-built_in">to</span> connect <span class="hljs-built_in">to</span>
@@ -305,7 +307,7 @@ transformer = <span class="hljs-keyword">await</span> VoiceFocusDeviceTransforme
 					<p>You can optionally implement the <code>VoiceFocusTransformDeviceObserver</code> interface and use <code>addObserver</code> to receive callbacks when one of two things occur:</p>
 					<ul>
 						<li><code>voiceFocusFellBackToInnerStream</code>: if applying noise suppression to an audio device failed, causing the SDK to fall back to using the inner device with the browser’s own noise suppression, this will be called. This should be uncommon, but this allows you to adapt your UI to failure.</li>
-						<li><code>onCPUWarning</code>: if the noise suppressor is unable to keep up with input audio, and the execution mode is able to determine this, then <code>onCPUWarning</code> will be invoked approximately every 15 milliseconds. The user will not themselves hear any audio glitching: bad audio will be heard by <em>other participants in the meeting</em>. Disabling noise suppression or other application features might be necessary to avoid continued disruption of the user experience.</li>
+						<li><code>voiceFocusInsufficientResources</code>: if the noise suppressor is unable to keep up with input audio, and the execution mode is able to determine this, then <code>voiceFocusInsufficientResources</code> will be invoked approximately every 15 milliseconds. The user will not themselves hear any audio glitching: bad audio will be heard by <em>other participants in the meeting</em>. Disabling noise suppression or other application features might be necessary to avoid continued disruption of the user experience.</li>
 					</ul>
 					<a href="#automatic-gain-control" id="automatic-gain-control" style="color: inherit; text-decoration: none;">
 						<h2>Automatic gain control</h2>
