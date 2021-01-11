@@ -29,7 +29,6 @@ import {
   MeetingSessionConfiguration,
   MeetingSessionPOSTLogger,
   MultiLogger,
-  Versioning,
 } from 'amazon-chime-sdk-js';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -101,12 +100,12 @@ export class DemoMeetingApp {
   constructor() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (global as any).app = this;
-    (document.getElementById('sdk-version-readiness') as HTMLSpanElement).innerText =
-      'amazon-chime-sdk-js@' + Versioning.sdkVersion;
-    this.initEventListeners();
+/*     (document.getElementById('sdk-version-readiness') as HTMLSpanElement).innerText =
+      'amazon-chime-sdk-js@' + Versioning.sdkVersion; */
+    //this.initEventListeners();
     this.initParameters();
     this.setMediaRegion();
-    this.switchToFlow('flow-authenticate');
+    this.startChecksAutomatically();
 
     const logLevel = LogLevel.INFO;
     this.logger = new SwappableLogger(new ConsoleLogger('SDK', logLevel));
@@ -344,14 +343,33 @@ export class DemoMeetingApp {
   };
 
   continueTestExecution = async (): Promise<void> => {
-    await this.micTest();
-    await this.videoTest();
-    await this.cameraTest();
-    await this.networkUdpTest();
-    await this.networkTcpTest();
-    await this.audioConnectivityTest();
-    await this.videoConnectivityTest();
-    await this.contentShareTest();
+    try {
+      await this.micTest();
+      await this.videoTest();
+      await this.networkUdpTest();
+      await this.networkTcpTest();
+      await this.audioConnectivityTest();
+      await this.videoConnectivityTest();
+
+      //REACTIVE THIS FOR MANDATORY CHECKS
+/*       const result = [
+        //micResponse === CheckAudioInputFeedback.Succeeded,
+        //videoResponse === CheckVideoInputFeedback.Succeeded,
+        audioConnectivityTestResp === CheckAudioConnectivityFeedback.Succeeded,
+        videoConnectivityTestResp === CheckVideoConnectivityFeedback.Succeeded
+      ].some((response) => {
+        return response === false
+      });
+
+      window.top.postMessage({ success: !result }, '*'); */
+    
+      //returns always true
+      //window.top.postMessage({ success: true }, '*');
+    } catch (error) {
+      //window.top.postMessage({ success: false }, '*')
+    }
+
+    window.top.postMessage({ success: true }, '*');
   };
 
   createReadinessHtml(id: string, textToDisplay: string): void {
@@ -411,8 +429,8 @@ export class DemoMeetingApp {
       if (!!(await this.startMeetingAndInitializeMeetingReadinessChecker())) {
         this.switchToFlow('flow-readinesstest');
         //create new HTML header
-        (document.getElementById('sdk-version') as HTMLSpanElement).innerText =
-          'amazon-chime-sdk-js@' + Versioning.sdkVersion;
+/*         (document.getElementById('sdk-version') as HTMLSpanElement).innerText =
+          'amazon-chime-sdk-js@' + Versioning.sdkVersion; */
         this.createReadinessHtml('readiness-header', 'Readiness tests underway...');
         await this.speakerTest();
       }
@@ -641,6 +659,19 @@ export class DemoMeetingApp {
           (document.getElementById('inputRegion') as HTMLInputElement).value = nearestMediaRegion;
         } catch (error) {
           this.log('Default media region selected: ' + error.message);
+        }
+      }
+    );
+  }
+
+  startChecksAutomatically(): void {
+    new AsyncScheduler().start(
+      async (): Promise<void> => {
+        if (!!(await this.startMeetingAndInitializeMeetingReadinessChecker())) {
+          this.switchToFlow('flow-readinesstest');
+          //create new HTML header
+          this.createReadinessHtml('readiness-header', 'Readiness tests underway...');
+          await this.continueTestExecution();
         }
       }
     );
