@@ -8,6 +8,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
+### Changed
+
+### Removed
+
+### Fixed
+- Disable reconnecting in AudioVideoControllerFacade's `stop` method.
+  Add documentation for the `stop` method.
+- Fix dropped attendee presence during network reconnects.
+
+## [2.4.0] - 2021-01-08
+
+### Added
 - Add support for Amazon Voice Focus support in Safari Technology Preview for macOS.
   Builders using an explicit revision or asset group must make sure to use a
   revision no earlier than this; an error will be thrown in Safari if older
