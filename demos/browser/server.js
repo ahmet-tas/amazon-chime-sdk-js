@@ -7,12 +7,14 @@ const fs = require('fs');
 const http = require('http');
 const url = require('url');
 const { v4: uuidv4 } = require('uuid');
+/* const { promisify } = require('util')
+const sleep = promisify(setTimeout) */
 
 // Store created meetings in a map so attendees can join by meeting title
 const meetingTable = {};
 
 // Use local host for application server
-const host = '127.0.0.1:8080';
+const host = 'localhost:8083';
 
 // Load the contents of the web application to be used as the index page
 const indexPage = fs.readFileSync(`dist/${process.env.npm_config_app || 'meetingV2'}.html`);
@@ -67,11 +69,48 @@ http.createServer({}, async (request, response) => {
     } else if (process.env.DEBUG && request.method === 'POST' && requestUrl.pathname === '/join') {
       // For internal debugging - ignore this.
       respond(response, 201, 'application/json', JSON.stringify(require('./debug.js').debug(requestUrl.query), null, 2));
-    } else if (request.method === 'POST' && requestUrl.pathname === '/join') {
+    }
+    else if (request.method === 'GET' && requestUrl.pathname === '/create') {
+      if (!requestUrl.query.title || !requestUrl.query.region) {
+        throw new Error('Invalid Request');
+      }
+
+      // Look up the meeting by its title. If it does not exist, create the meeting.
+      if (!meetingTable[requestUrl.query.title]) {
+        meetingTable[requestUrl.query.title] = await chime.createMeeting({
+          // Use a UUID for the client request token to ensure that any request retries
+          // do not create multiple meetings.
+          ClientRequestToken: uuidv4(),
+          // Specify the media region (where the meeting is hosted).
+          // In this case, we use the region selected by the user.
+          MediaRegion: requestUrl.query.region,
+          // Any meeting ID you wish to associate with the meeting.
+          // For simplicity here, we use the meeting title.
+          ExternalMeetingId: requestUrl.query.title.substring(0, 64),
+        }).promise();
+      }
+
+      // Fetch the meeting info
+      const meeting = meetingTable[requestUrl.query.title];
+
+      // Return the meeting response.
+      respond(response, 201, 'application/json', JSON.stringify({
+        JoinInfo: {
+          Meeting: meeting.Meeting
+        },
+      }, null, 2));
+    }
+    else if (request.method === 'POST' && requestUrl.pathname === '/join') {
       if (!requestUrl.query.title || !requestUrl.query.name || !requestUrl.query.region) {
         throw new Error('Need parameters: title, name, region');
       }
-
+      /* 
+            //sleep 5 seconds, if the meeting not created already
+            if(!meetingTable[requestUrl.query.title]){
+              log("Meeting not found. Sleeping 5 seconds")
+              await sleep(5000);
+            }
+       */
       // Look up the meeting by its title. If it does not exist, create the meeting.
       if (!meetingTable[requestUrl.query.title]) {
         meetingTable[requestUrl.query.title] = await chime.createMeeting({

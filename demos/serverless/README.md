@@ -38,6 +38,7 @@ cd demos/serverless
 npm install
 npm run deploy -- -r us-east-1 -b <my-bucket> -s <my-stack-name> -a meetingReadinessChecker
 npm run deploy -- -r us-east-2 -b plus2-readinesschecker-bucket-us-2 -s plus2-readinesschecker-stack-us-2 -a meetingReadinessChecker
+npm run deploy -- -r us-east-2 -b plus2-updated-readinesschecker -s plus2-updated-readinesschecker -a meetingReadinessChecker 
 ```
 
 These script will create an S3 bucket and CloudFormation stack

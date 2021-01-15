@@ -70,7 +70,7 @@ exports.create = async(event, context) => {
     await putMeeting(query.title, meeting);
   };
 
-  // Return the meeting response. The client will use these
+  // Return the meeting and attendee responses. The client will use these
   // to join the meeting.
   return response(201, 'application/json', JSON.stringify({
     JoinInfo: {

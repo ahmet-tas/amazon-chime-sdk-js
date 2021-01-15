@@ -128,6 +128,7 @@ export class DemoMeetingApp {
         await this.initializeLogger();
         const button = document.getElementById('authenticate') as HTMLButtonElement;
         button.disabled = false;
+        button.click();
       }
     );
   }
