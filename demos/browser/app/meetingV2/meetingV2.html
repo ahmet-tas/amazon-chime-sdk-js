@@ -25,7 +25,7 @@
       <h1 class="h3 mb-3 font-weight-normal">Join a meeting</h1>
       <div class="row mt-3">
         <label for="inputMeeting" class="sr-only">Meeting Title</label>
-        <input type="name" id="inputMeeting" class="form-control" placeholder="Meeting Title" required>
+        <input type="name" id="inputMeeting" class="form-control" placeholder="Meeting Title" required autofocus>
       </div>
       <div class="row mt-3">
         <label for="inputName" class="sr-only">Your Name</label>
@@ -105,7 +105,7 @@
       <h1 class="h3 mb-3 font-weight-normal">Join a meeting via SIP</h1>
       <div class="row mt-3">
         <label for="sip-inputMeeting" class="sr-only">Meeting Title</label>
-        <input type="name" id="sip-inputMeeting" class="form-control" placeholder="Meeting Title" required>
+        <input type="name" id="sip-inputMeeting" class="form-control" placeholder="Meeting Title" required autofocus>
       </div>
       <div class="row mt-3">
         <label for="voiceConnectorId" class="sr-only">Voice Connector ID</label>
@@ -243,8 +243,8 @@
 
 <!-- In-meeting screen -->
 
-<div id="flow-meeting" class="flow" style="position: absolute;inset: 0px 0px 0px;display: block;">
-  <div class="p-2 d-none d-sm-block align-items-end" style="position:fixed;right:0;bottom:0;left:0;z-index:1000">
+<div id="flow-meeting" class="flow" style="position:absolute;left:0;top:0;bottom:55px;right:0">
+  <div class="p-2 d-none d-sm-block align-items-end" style="position:fixed;right:0;bottom:0;left:0;">
     <div class="row align-items-end">
       <div class="col">
         <div id="chime-meeting-id" class="text-muted"></div>
@@ -258,29 +258,14 @@
   </div>
   <audio id="meeting-audio" style="display:none"></audio>
   <div id="meeting-container" class="container-fluid h-100" style="display:flex; flex-flow:column">
-    <div id="control-bar" class="col-12 row mb-3 mb-lg-0" style="position: absolute; bottom: 0; z-index: 1000;">
+    <div class="row mb-3 mb-lg-0" style="flex: unset;">
       <div class="col-12 col-lg-3 order-1 order-lg-1 text-center text-lg-left">
-        <button id="button-chat-window" type="button" class="btn btn-success mx-1 mx-xl-2 my-2" title="Toggle chat window" data-toggle="button" aria-pressed="false" autocomplete="off">
-          ${require('../../node_modules/open-iconic/svg/chat.svg').default}
-      </button>
-      <div id="contentShare-buttons" class="btn-group mx-1 mx-xl-2 my-2" role="group" aria-label="Toggle content share">
-          <button id="button-content-share" type="button" class="btn btn-success" title="Toggle content share">
-            ${require('../../node_modules/open-iconic/svg/monitor.svg').default}
-          </button>
-          <div class="btn-group" role="group">
-            <button id="button-content-share-drop" type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Select content to share"></button>
-            <div id="dropdown-menu-content-share" class="dropdown-menu dropdown-menu-right" aria-labelledby="button-content-share-drop" x-placement="bottom-start" style="position: absolute; transform: translate3d(0px, 38px, 0px); top: 0px; left: 0px; will-change: transform;">
-              <a id="dropdown-item-content-share-screen-capture" class="dropdown-item" href="#">Screen Capture...</a>
-              <!-- <a id="dropdown-item-content-share-screen-test-video" class="dropdown-item" href="#">Test Video</a> -->
-            </div>
-          </div>
-      </div>
         <div id="meeting-id" class="navbar-brand text-muted m-0 m-lg-2"></div>
         <div id="mobile-chime-meeting-id" class="text-muted d-block d-sm-none" style="font-size:0.65rem;"></div>
         <div id="mobile-attendee-id" class="text-muted d-block d-sm-none mb-2" style="font-size:0.65rem;"></div>
       </div>
       <div class="col-8 col-lg-6 order-2 order-lg-2 text-left text-lg-center">
-        <div id="mic-buttons" class="btn-group mx-1 mx-xl-2 my-2" role="group" aria-label="Toggle microphone">
+        <div class="btn-group mx-1 mx-xl-2 my-2" role="group" aria-label="Toggle microphone">
           <button id="button-microphone" type="button" class="btn btn-success" title="Toggle microphone">
             ${require('../../node_modules/open-iconic/svg/microphone.svg').default}
           </button>
@@ -291,7 +276,7 @@
             </div>
           </div>
         </div>
-        <div id="camera-buttons" class="btn-group mx-1 mx-xl-2 my-2" role="group" aria-label="Toggle camera">
+        <div class="btn-group mx-1 mx-xl-2 my-2" role="group" aria-label="Toggle camera">
           <button id="button-camera" type="button" class="btn btn-success" title="Toggle camera">
             ${require('../../node_modules/open-iconic/svg/video.svg').default}
           </button>
@@ -302,10 +287,34 @@
             </div>
           </div>
         </div>
-        <button id="button-pause-content-share" type="button" class="btn btn-success mx-1 mx-xl-2 my-2 d-none" title="Pause and unpause content share">
+        <div class="btn-group mx-1 mx-xl-2 my-2" role="group" aria-label="Apply filter">
+          <button id="button-video-filter" type="button" class="btn btn-success" title="Apply filter">
+            ${require('../../node_modules/open-iconic/svg/contrast.svg').default}
+          </button>
+          <div class="btn-group" role="group">
+            <button id="button-video-filter-drop" type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Select filter"></button>
+            <div id="dropdown-menu-filter" class="dropdown-menu dropdown-menu-right" aria-labelledby="button-video-filter-drop" x-placement="bottom-start">
+              <a class="dropdown-item" href="#">No filter</a>
+            </div>
+          </div>
+        </div>
+        <div class="btn-group mx-1 mx-xl-2 my-2" role="group" aria-label="Toggle content share">
+          <button id="button-content-share" type="button" class="btn btn-success" title="Toggle content share">
+            ${require('../../node_modules/open-iconic/svg/camera-slr.svg').default}
+          </button>
+          <div class="btn-group" role="group">
+            <button id="button-content-share-drop" type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Select content to share"></button>
+            <div id="dropdown-menu-content-share" class="dropdown-menu dropdown-menu-right" aria-labelledby="button-content-share-drop" x-placement="bottom-start" style="position: absolute; transform: translate3d(0px, 38px, 0px); top: 0px; left: 0px; will-change: transform;">
+              <a id="dropdown-item-content-share-screen-capture" class="dropdown-item" href="#">Screen Capture...</a>
+              <a id="dropdown-item-content-share-screen-test-video" class="dropdown-item" href="#">Test Video</a>
+              <a id="dropdown-item-content-share-file-item" class="dropdown-item" href="#"><input id="content-share-item" type="file"></a>
+            </div>
+          </div>
+        </div>
+        <button id="button-pause-content-share" type="button" class="btn btn-success mx-1 mx-xl-2 my-2" title="Pause and unpause content share">
           ${require('../../node_modules/open-iconic/svg/media-pause.svg').default}
         </button>
-        <div id="speaker-buttons" class="btn-group mx-1 mx-xl-2 my-2" role="group" aria-label="Toggle speaker">
+        <div class="btn-group mx-1 mx-xl-2 my-2" role="group" aria-label="Toggle speaker">
           <button id="button-speaker" type="button" class="btn btn-success" title="Toggle speaker">
             ${require('../../node_modules/open-iconic/svg/volume-low.svg').default}
           </button>
@@ -316,11 +325,11 @@
             </div>
           </div>
         </div>
-        <button id="button-video-stats" type="button" class="btn btn-success mx-1 mx-xl-2 my-2 d-none" title="Toggle video WebRTC stats display" data-toggle="button" aria-pressed="false" autocomplete="off">
+        <button id="button-video-stats" type="button" class="btn btn-success mx-1 mx-xl-2 my-2" title="Toggle video WebRTC stats display" data-toggle="button" aria-pressed="false" autocomplete="off">
           ${require('../../node_modules/open-iconic/svg/signal.svg').default}
         </button>
       </div>
-      <div class="meetingControls col-4 col-lg-3 order-3 order-lg-3 text-right text-lg-right">
+      <div class="col-4 col-lg-3 order-3 order-lg-3 text-right text-lg-right">
         <button id="button-meeting-leave" type="button" class="btn btn-outline-success mx-1 mx-xl-2 my-2 px-4" title="Leave meeting">
           ${require('../../node_modules/open-iconic/svg/account-logout.svg').default}
         </button>
@@ -330,12 +339,10 @@
       </div>
     </div>
     <div id="roster-tile-container" class="row flex-sm-grow-1 overflow-hidden h-100" style="flex: unset;">
-      <div id="attendeeList" class="d-flex flex-column col-2 col-sm-2 col-md-2 col-lg-2" style="position: fixed; z-index: 100; right: 1%; top: 1%">
+      <div id="roster-message-container" class="d-flex flex-column col-12 col-sm-6 col-md-5 col-lg-4 h-100">
         <div class="bs-component" style="flex: 1 1 auto; overflow-y: auto; height: 50%;">
           <ul id="roster" class="list-group"></ul>
         </div>
-      </div>
-      <div id="roster-message-container" class="d-none flex-column col-12 col-sm-6 col-md-5 col-lg-4 h-75" style="position:fixed; z-index:100; top: 1%">
         <div class="message d-flex flex-column pt-3" style="flex: 1 1 auto; overflow: hidden; height: 50%;">
           <div class="list-group receive-message" id="receive-message" style="flex: 1 1 auto; overflow-y: auto;
             border: 1px solid rgba(0, 0, 0, 0.125); background-color: #fff"></div>
@@ -345,7 +352,7 @@
           </div>
         </div>
       </div>
-      <div id="tile-container" class="col-12 h-100" style="overflow-y: scroll">
+      <div id="tile-container" class="col-12 col-sm-6 col-md-7 col-lg-8 my-4 my-sm-0 h-100" style="overflow-y: scroll">
         <div id="tile-area" class="v-grid">
           <div id="tile-0" class="video-tile">
             <video id="video-0" class="video-tile-video"></video>

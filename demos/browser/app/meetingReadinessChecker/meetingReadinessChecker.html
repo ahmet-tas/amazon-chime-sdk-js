@@ -13,7 +13,7 @@
 <!-- Amazon Device Checker landing page  -->
 
 <div id="flow-authenticate" class="flow text-center p-2">
-<!--   <div class="text-muted" style="position:fixed;right:3px;bottom:3px" id="sdk-version"></div> -->
+  <div class="text-muted" style="position:fixed;right:3px;bottom:3px" id="sdk-version"></div>
   <div class="container">
     <form id="form-authenticate">
       <h1 class="h3 mb-3 font-weight-normal">Amazon Chime SDK Readiness Checker</h1>
@@ -71,7 +71,7 @@
 </div>
 
 <div id="flow-readinesstest" class="flow text-center p-2">
-  <!-- <div class="text-muted" style="position:fixed;right:3px;bottom:3px" id="sdk-version-readiness"></div> -->
+  <div class="text-muted" style="position:fixed;right:3px;bottom:3px" id="sdk-version-readiness"></div>
   <div class="container">
     <h1 id="readiness-header" class="h3 mb-3 font-weight-normal"></h1>
     <audio id="speaker-test-audio-element" style="display:none"></audio>
@@ -83,6 +83,24 @@
       </tr>
       </thead>
       <tbody>
+      <tr style="display:none">
+        <td class="text-left">Speaker</td>
+        <td id="speaker-row">
+          <button id="speakertest-button" type="button" class="btn btn-sm btn-secondary" title="Play tone">
+            Play Tone
+          </button>
+          <span id="speaker-test" class="badge badge-secondary" style="display:none">Not Started</span>
+          <span id="speaker-user-feedback" style="display:none">
+            <span>Can you hear a sound?</span>
+            <label>
+                <input type="radio" id="speaker-yes" name="user-feedback-reply" value="yes"/>Yes
+            </label>
+            <label>
+                <input type="radio" id="speaker-no" name="user-feedback-reply" value="no"/>No
+            </label>
+          </span>
+        </td>
+      </tr>
       <tr>
         <td class="text-left">Mic</td>
         <td><span id="mic-test" class="badge badge-secondary">Not Started</span></td>
@@ -91,14 +109,22 @@
         <td class="text-left">Camera</td>
         <td><span id="video-test" class="badge badge-secondary">Not Started</span></td>
       </tr>
-      <tr>
-        <td class="text-left">Network - UDP</td>
+<!--       <tr>
+        <td class="text-left">Resolution</td>
+        <td>
+          <span id="camera-test1" ></span>
+          <span id="camera-test2" class="badge badge-secondary">Not Started</span>
+          <span id="camera-test3" ></span>
+        </td>
+      </tr> -->
+<!--       <tr>
+        <td class="text-left">Network Test - UDP</td>
         <td><span id="networkudp-test" class="badge badge-secondary">Not Started</span></td>
       </tr>
       <tr>
-        <td class="text-left">Network - TCP</td>
+        <td class="text-left">Network Test - TCP</td>
         <td><span id="networktcp-test" class="badge badge-secondary">Not Started</span></td>
-      </tr>
+      </tr> -->
       <tr>
         <td class="text-left">Audio Connectivity</td>
         <td><span id="audioconnectivity-test" class="badge badge-secondary">Not Started</span></td>
@@ -107,6 +133,16 @@
         <td class="text-left">Video Connectivity</td>
         <td><span id="videoconnectivity-test" class="badge badge-secondary">Not Started</span></td>
       </tr>
+<!--       <tr>
+        <td class="text-left">Content Share</td>
+        <td>
+          <button id="contentshare-button" type="button" class="btn btn-sm btn-secondary"
+                  title="Start content share test" disabled>
+            Start
+          </button>
+          <span id="contentshare-test" class="badge badge-secondary" style="display:none">Not Started</span>
+        </td>
+      </tr> -->
       </tbody>
     </table>
   </div>

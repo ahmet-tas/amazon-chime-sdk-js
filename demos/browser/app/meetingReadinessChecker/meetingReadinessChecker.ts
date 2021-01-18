@@ -11,9 +11,6 @@ import {
   CheckAudioInputFeedback,
   CheckAudioOutputFeedback,
   CheckCameraResolutionFeedback,
-  CheckContentShareConnectivityFeedback,
-  CheckNetworkTCPConnectivityFeedback,
-  CheckNetworkUDPConnectivityFeedback,
   CheckVideoConnectivityFeedback,
   CheckVideoInputFeedback,
   ConsoleLogger,
@@ -100,15 +97,28 @@ export class DemoMeetingApp {
   constructor() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (global as any).app = this;
-/*     (document.getElementById('sdk-version-readiness') as HTMLSpanElement).innerText =
-      'amazon-chime-sdk-js@' + Versioning.sdkVersion; */
-    //this.initEventListeners();
+    this.initEventListeners();
     this.initParameters();
     this.setMediaRegion();
-    this.startChecksAutomatically();
 
     const logLevel = LogLevel.INFO;
     this.logger = new SwappableLogger(new ConsoleLogger('SDK', logLevel));
+  }
+
+  startChecksAutomatically(): void {
+    new AsyncScheduler().start(
+      async (): Promise<void> => {
+        this.switchToFlow('flow-readinesstest');
+
+        if (!!(await this.startMeetingAndInitializeMeetingReadinessChecker())) {
+          this.createReadinessHtml('readiness-header', 'Readiness tests underway...');
+
+          await this.getAudioOutputDevice();
+          this.canHear = true;
+          await this.continueTestExecution();  
+        }
+      }
+    )
   }
 
   switchToFlow(flow: string): void {
@@ -128,7 +138,6 @@ export class DemoMeetingApp {
         await this.initializeLogger();
         const button = document.getElementById('authenticate') as HTMLButtonElement;
         button.disabled = false;
-        button.click();
       }
     );
   }
@@ -292,10 +301,6 @@ export class DemoMeetingApp {
     return;
   };
 
-  contentShareTest = async (): Promise<void> => {
-    const button = document.getElementById('contentshare-button') as HTMLButtonElement;
-    button.disabled = false;
-  };
 
   audioConnectivityTest = async (): Promise<CheckAudioConnectivityFeedback> => {
     this.createReadinessHtml('audioconnectivity-test', 'spinner-border');
@@ -323,7 +328,7 @@ export class DemoMeetingApp {
     return videoConnectivityResp;
   };
 
-  networkTcpTest = async (): Promise<CheckNetworkTCPConnectivityFeedback> => {
+/*   networkTcpTest = async (): Promise<CheckNetworkTCPConnectivityFeedback> => {
     this.createReadinessHtml('networktcp-test', 'spinner-border');
     const networkTcpResp = await this.meetingReadinessChecker.checkNetworkTCPConnectivity();
     this.createReadinessHtml(
@@ -331,9 +336,9 @@ export class DemoMeetingApp {
       CheckNetworkTCPConnectivityFeedback[networkTcpResp]
     );
     return networkTcpResp;
-  };
+  }; */
 
-  networkUdpTest = async (): Promise<CheckNetworkUDPConnectivityFeedback> => {
+/*   networkUdpTest = async (): Promise<CheckNetworkUDPConnectivityFeedback> => {
     this.createReadinessHtml('networkudp-test', 'spinner-border');
     const networkUdpResp = await this.meetingReadinessChecker.checkNetworkUDPConnectivity();
     this.createReadinessHtml(
@@ -341,36 +346,33 @@ export class DemoMeetingApp {
       CheckNetworkUDPConnectivityFeedback[networkUdpResp]
     );
     return networkUdpResp;
-  };
+  }; */
 
   continueTestExecution = async (): Promise<void> => {
     try {
       await this.micTest();
       await this.videoTest();
-      await this.networkUdpTest();
-      await this.networkTcpTest();
+/*       await this.networkUdpTest();
+      await this.networkTcpTest(); */
       await this.audioConnectivityTest();
       await this.videoConnectivityTest();
 
       //REACTIVE THIS FOR MANDATORY CHECKS
 /*       const result = [
-        //micResponse === CheckAudioInputFeedback.Succeeded,
-        //videoResponse === CheckVideoInputFeedback.Succeeded,
+        micResponse === CheckAudioInputFeedback.Succeeded,
+        videoResponse === CheckVideoInputFeedback.Succeeded,
         audioConnectivityTestResp === CheckAudioConnectivityFeedback.Succeeded,
         videoConnectivityTestResp === CheckVideoConnectivityFeedback.Succeeded
       ].some((response) => {
         return response === false
-      });
+      }); */
 
-      window.top.postMessage({ success: !result }, '*'); */
-    
-      //returns always true
-      //window.top.postMessage({ success: true }, '*');
+/*       window.top.postMessage({ success: !result }, '*'); */
     } catch (error) {
-      //window.top.postMessage({ success: false }, '*')
+/*       window.top.postMessage({ success: false }, '*') */
     }
 
-    window.top.postMessage({ success: true }, '*');
+    window.top.postMessage({ success: true }, '*')
   };
 
   createReadinessHtml(id: string, textToDisplay: string): void {
@@ -410,28 +412,12 @@ export class DemoMeetingApp {
       await this.continueTestExecution();
     });
 
-    const contentShareButton = document.getElementById('contentshare-button') as HTMLButtonElement;
-    contentShareButton.addEventListener('click', async () => {
-      contentShareButton.style.display = 'none';
-      const contentShareResult = document.getElementById('contentshare-test');
-      contentShareResult.style.display = 'inline-block';
-      this.createReadinessHtml('contentshare-test', 'spinner-border');
-      const contentShareResp = await this.meetingReadinessChecker.checkContentShareConnectivity();
-      this.createReadinessHtml(
-        'contentshare-test',
-        CheckContentShareConnectivityFeedback[contentShareResp]
-      );
-      contentShareButton.disabled = true;
-      this.createReadinessHtml('readiness-header', 'Readiness tests complete!');
-    });
+
 
     document.getElementById('form-authenticate').addEventListener('submit', async e => {
       e.preventDefault();
       if (!!(await this.startMeetingAndInitializeMeetingReadinessChecker())) {
         this.switchToFlow('flow-readinesstest');
-        //create new HTML header
-/*         (document.getElementById('sdk-version') as HTMLSpanElement).innerText =
-          'amazon-chime-sdk-js@' + Versioning.sdkVersion; */
         this.createReadinessHtml('readiness-header', 'Readiness tests underway...');
         await this.speakerTest();
       }
@@ -665,23 +651,12 @@ export class DemoMeetingApp {
     );
   }
 
-  startChecksAutomatically(): void {
-    new AsyncScheduler().start(
-      async (): Promise<void> => {
-        if (!!(await this.startMeetingAndInitializeMeetingReadinessChecker())) {
-          this.switchToFlow('flow-readinesstest');
-          //create new HTML header
-          this.createReadinessHtml('readiness-header', 'Readiness tests underway...');
-          await this.continueTestExecution();
-        }
-      }
-    );
-  }
-
   log(str: string): void {
     console.log(`[Meeting Readiness Checker] ${str}`);
   }
 }
 window.addEventListener('load', () => {
-  new DemoMeetingApp();
+  const demoApp = new DemoMeetingApp();
+
+  demoApp.startChecksAutomatically();
 });
